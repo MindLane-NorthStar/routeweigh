@@ -1,0 +1,38 @@
+export const DEFAULT_WEIGHPOINTS = [
+  {
+    id: "home",
+    label: "Home",
+    address: "1645 Union Street, Cuyahoga Falls, OH 44221",
+    lat: 41.1137,
+    lng: -81.4785,
+    icon: "\u{1F3E0}",
+    color: "#2E7D52",
+  },
+  {
+    id: "work",
+    label: "Work",
+    address: "21000 Infinium Way, Strongsville, OH 44149",
+    lat: 41.3087,
+    lng: -81.8262,
+    icon: "\u{1F3E2}",
+    color: "#D97706",
+  },
+  {
+    id: "parents",
+    label: "Mom & Dad's",
+    address: "17867 Monterey Pine Drive, Strongsville, OH 44136",
+    lat: 41.2946,
+    lng: -81.8098,
+    icon: "\u{1F3E1}",
+    color: "#B8860B",
+  },
+  {
+    id: "aunt",
+    label: "Aunt Cheryl's",
+    address: "4435 Edgeview Trail, Brunswick, OH 44212",
+    lat: 41.2554,
+    lng: -81.8234,
+    icon: "\u{1F3D8}\uFE0F",
+    color: "#16785A",
+  },
+];

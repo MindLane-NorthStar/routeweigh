@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/jlull/%USERPROFILE%/routeweigh/**)",
+      "Bash(npm --version)",
+      "Bash(npm create:*)",
+      "Bash(cp tmpscaffold/package.json .)",
+      "Bash(cp tmpscaffold/vite.config.js .)",
+      "Bash(cp tmpscaffold/index.html .)",
+      "Bash(cp tmpscaffold/eslint.config.js .)",
+      "Bash(npm install:*)",
+      "Bash(mkdir -p src/components src/context src/hooks src/utils src/data)",
+      "Bash(rm -f src/App.css src/App.jsx src/main.jsx src/index.css)",
+      "Bash(cp \"hero.jpg.JPG\" public/hero.jpg)",
+      "Bash(rm -f src/assets/react.svg public/vite.svg src/App.css)",
+      "Bash(npx vite:*)",
+      "Bash(curl -s http://localhost:5173)"
+    ]
+  }
+}
