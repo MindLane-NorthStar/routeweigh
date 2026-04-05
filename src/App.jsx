@@ -183,24 +183,33 @@ function AppContent({ auth }) {
 
         {/* Save + Clear after results */}
         {totalA && totalB && (
-          <div className="flex justify-center gap-3 mt-4 mb-8">
-            <button
-              onClick={handleSave}
-              disabled={saved}
-              className={`text-sm font-medium px-6 py-2.5 rounded-xl transition-all ${
-                saved
-                  ? "bg-green-100 text-green-600 border border-green-200"
-                  : "bg-white text-gray-700 border border-gray-300 hover:border-accent hover:text-accent shadow-sm"
-              }`}
-            >
-              {saved ? "✓ Saved!" : "💾 Save RouteWeigh"}
-            </button>
-            <button
-              onClick={clearAll}
-              className="text-sm text-gray-400 hover:text-gray-600 border border-gray-300 hover:border-gray-400 px-4 py-2.5 rounded-xl transition-colors"
-            >
-              🔄 New Comparison
-            </button>
+          <div className="flex flex-col items-center gap-3 mt-4 mb-8">
+            <div className="flex gap-3">
+              {auth?.isAuthenticated && (
+                <button
+                  onClick={handleSave}
+                  disabled={saved}
+                  className={`text-sm font-medium px-6 py-2.5 rounded-xl transition-all ${
+                    saved
+                      ? "bg-green-100 text-green-600 border border-green-200"
+                      : "bg-white text-gray-700 border border-gray-300 hover:border-accent hover:text-accent shadow-sm"
+                  }`}
+                >
+                  {saved ? "✓ Saved!" : "💾 Save RouteWeigh"}
+                </button>
+              )}
+              <button
+                onClick={clearAll}
+                className="text-sm text-gray-400 hover:text-gray-600 border border-gray-300 hover:border-gray-400 px-4 py-2.5 rounded-xl transition-colors"
+              >
+                🔄 New Comparison
+              </button>
+            </div>
+            {auth?.isGuest && (
+              <p className="text-[11px] text-gray-400">
+                <button onClick={auth.upgradeFromGuest} className="text-accent hover:underline">Create an account</button> to save your RouteWeighs
+              </p>
+            )}
           </div>
         )}
       </main>
