@@ -11,7 +11,6 @@ import ResultsPanel from "./components/ResultsPanel";
 import WeighStation from "./components/WeighStation";
 import AiAssistant from "./components/AiAssistant";
 import AuthScreen from "./components/AuthScreen";
-import UserMenu from "./components/UserMenu";
 import { useDirections } from "./hooks/useDirections";
 import { calculateLegCost, calculateScenarioTotal } from "./utils/costEngine";
 
@@ -24,6 +23,11 @@ function AppContent({ auth }) {
   const [totalB, setTotalB] = useState(null);
   const [calculated, setCalculated] = useState(false);
   const weighStationRef = useRef(null);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const scenarioA = state.scenarios.A;
   const scenarioB = state.scenarios.B;
@@ -64,18 +68,7 @@ function AppContent({ auth }) {
   return (
     <div className="min-h-screen bg-sky-bg">
       <Hero />
-      {/* Account bar — slim, above control bar */}
-      {auth && (
-        <div className="bg-white/80 border-b border-gray-100 px-4 py-1.5 flex justify-end items-center max-w-full">
-          <UserMenu
-            user={auth.user}
-            isGuest={auth.isGuest}
-            onSignOut={auth.signOut}
-            onUpgrade={auth.upgradeFromGuest}
-          />
-        </div>
-      )}
-      <ControlBar />
+      <ControlBar auth={auth} />
       <main className="max-w-4xl mx-auto px-4 pt-4 pb-12">
         <WeighPoints />
         <AiAssistant />

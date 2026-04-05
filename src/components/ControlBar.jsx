@@ -11,7 +11,7 @@ const FUEL_GRADES = [
   { value: "diesel", label: "Diesel" },
 ];
 
-export default function ControlBar() {
+export default function ControlBar({ auth }) {
   const { state, dispatch } = useAppContext();
   const { fuelPrice, fuelGrade, mpg, mpgLocked, pillowPremium, autoFuelPrice, zipCode } = state.settings;
   const [showPillow, setShowPillow] = useState(pillowPremium > 0);
@@ -149,6 +149,35 @@ export default function ControlBar() {
                 className="w-20 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
               />
             </label>
+          )}
+
+          {/* Account links — right-aligned */}
+          {auth && (
+            <div className="ml-auto flex items-center gap-2">
+              {auth.isGuest ? (
+                <>
+                  <span className="text-[11px] text-[#9CA3AF]">Guest</span>
+                  <button
+                    onClick={auth.upgradeFromGuest}
+                    className="text-[11px] text-[#9CA3AF] hover:text-gray-600 hover:underline transition-colors"
+                  >
+                    Create Account
+                  </button>
+                </>
+              ) : auth.user ? (
+                <>
+                  <span className="text-[11px] text-[#9CA3AF]">
+                    {auth.user.user_metadata?.display_name || auth.user.email?.split("@")[0]}
+                  </span>
+                  <button
+                    onClick={auth.signOut}
+                    className="text-[11px] text-[#9CA3AF] hover:text-red-400 hover:underline transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : null}
+            </div>
           )}
         </div>
 

@@ -42,6 +42,7 @@ export function useAuth() {
   const signIn = useCallback(async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
+    window.scrollTo(0, 0);
   }, []);
 
   const signOut = useCallback(async () => {
@@ -54,6 +55,7 @@ export function useAuth() {
   const continueAsGuest = useCallback(() => {
     setIsGuest(true);
     localStorage.setItem("routeweigh_guest", "true");
+    window.scrollTo(0, 0);
   }, []);
 
   const upgradeFromGuest = useCallback(() => {
