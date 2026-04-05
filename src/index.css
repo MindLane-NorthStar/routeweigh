@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 body {
   background-color: #D5DFEB;
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -9,15 +14,56 @@ body {
   margin: 0;
 }
 
-/* Google Places Autocomplete styling */
+/* Prevent any element from causing horizontal scroll */
+* {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Google Places Autocomplete — force light theme everywhere */
 gmpx-place-autocomplete,
-.gmpx-place-autocomplete {
+gmp-place-autocomplete,
+.gmpx-place-autocomplete,
+[class*="place-autocomplete"] {
   --gmpac-color-surface: #ffffff !important;
   --gmpac-color-on-surface: #1F2937 !important;
   --gmpac-color-on-surface-variant: #6B7280 !important;
   --gmpac-color-outline: #D1D5DB !important;
   --gmpac-color-primary: #16785A !important;
+  --gmpac-color-surface-container-lowest: #ffffff !important;
+  --gmpac-color-on-primary: #ffffff !important;
+  color-scheme: light !important;
   background: #ffffff !important;
   border-radius: 8px !important;
   font-family: 'DM Sans', system-ui, sans-serif !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Force input text to be dark */
+gmpx-place-autocomplete input,
+gmp-place-autocomplete input,
+[class*="place-autocomplete"] input {
+  color: #1F2937 !important;
+  background: #ffffff !important;
+  caret-color: #1F2937 !important;
+}
+
+/* Force dropdown to be light */
+.pac-container,
+[class*="autocomplete-suggestions"],
+[class*="place-picker"] {
+  background: #ffffff !important;
+  color: #1F2937 !important;
+  border: 1px solid #D1D5DB !important;
+  border-radius: 8px !important;
+}
+
+.pac-item,
+.pac-item span {
+  color: #1F2937 !important;
+}
+
+.pac-item:hover {
+  background: #F3F4F6 !important;
 }

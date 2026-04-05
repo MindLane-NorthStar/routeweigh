@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="24" fill="#1F2937"/>
+  <text x="96" y="82" font-family="system-ui" font-weight="800" font-size="48" fill="#E8B830" text-anchor="middle">RW</text>
+  <text x="96" y="125" font-family="system-ui" font-weight="400" font-size="16" fill="#9CA3AF" text-anchor="middle" letter-spacing="3">ROUTEWEIGH</text>
+</svg>
