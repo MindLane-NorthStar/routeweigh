@@ -1,10 +1,15 @@
 import { useAppContext } from "../context/AppContext";
 
+const textShadow = '0 2px 8px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4)';
+
 export default function Hero() {
   const { state } = useAppContext();
 
   return (
-    <div className="relative w-full h-[220px] sm:h-[240px] overflow-hidden">
+    <div
+      className="relative w-full h-[220px] sm:h-[240px] overflow-hidden"
+      style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}
+    >
       <img
         src={state.heroUrl}
         alt="Highway hero"
@@ -13,20 +18,29 @@ export default function Hero() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/45" />
 
-      {/* Title — top of image over sky */}
-      <div className="absolute top-[10%] left-0 right-0 text-center">
-        <h1 className="font-extrabold text-[36px] sm:text-[44px] tracking-[5px] leading-none">
+      {/* Title — over sky, with text shadow */}
+      <div className="absolute top-[8%] left-0 right-0 text-center" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))' }}>
+        <h1
+          className="font-extrabold text-[36px] sm:text-[44px] tracking-[5px] leading-none"
+          style={{ textShadow }}
+        >
           <span className="text-accent">ROUTE</span>
           <span className="text-white">WEIGH</span>
         </h1>
-        <p className="text-[11px] tracking-[4px] text-white/85 uppercase mt-2">
+        <p
+          className="text-[11px] tracking-[4px] text-white/85 uppercase mt-4"
+          style={{ textShadow }}
+        >
           Know Before You Go
         </p>
       </div>
 
-      {/* Explainer at bottom */}
+      {/* Explainer at bottom — with text shadow */}
       <div className="absolute bottom-0 left-0 right-0 flex justify-center px-5 pb-3">
-        <p className="text-white/60 text-[11px] leading-[1.5] text-center max-w-[420px]">
+        <p
+          className="text-white/60 text-[11px] leading-[1.5] text-center max-w-[420px]"
+          style={{ textShadow }}
+        >
           Two routes. Real traffic. Real fuel costs. Build your scenarios below or tell the AI what you need.
         </p>
       </div>
