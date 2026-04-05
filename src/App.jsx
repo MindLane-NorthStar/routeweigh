@@ -143,7 +143,7 @@ function App() {
 
   return (
     <AppProvider>
-      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places"]}>
         {/* User menu floats top-right */}
         <div className="fixed top-3 right-3 z-[60]">
           <UserMenu
