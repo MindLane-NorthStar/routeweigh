@@ -2,15 +2,15 @@ import { useState, useCallback } from "react";
 
 const HERE_API_KEY = import.meta.env.VITE_HERE_API_KEY;
 
-// HERE fuel type mapping
-// https://developer.here.com/documentation/fuel-prices/dev_guide/topics/resource-type-fuel-type.html
+// HERE fuel type IDs
+// See: https://developer.here.com/documentation/fuel-prices/dev_guide/topics/resource-type-fuel-type.html
 const FUEL_TYPE_MAP = {
-  regular: "regular",      // Regular unleaded
-  midgrade: "midgrade",    // Midgrade
-  premium: "premium",      // Premium
-  e88: "super_e15",        // Super E15 = Unleaded 88 / E88
-  e85: "e85",              // E85 (flex fuel)
-  diesel: "diesel",        // Diesel
+  regular: "3",         // Regular unleaded
+  midgrade: "21",       // Midgrade
+  premium: "4",         // Premium
+  e88: "41",            // Super E15 / Unleaded 88
+  e85: "25",            // E85
+  diesel: "2",          // Diesel
 };
 
 const FUEL_LABELS = {
@@ -29,70 +29,56 @@ export function useFuelPrice() {
   const [error, setError] = useState(null);
   const [stations, setStations] = useState([]);
 
-  const fetchPrice = useCallback(async (lat, lng, fuelGrade = "regular", radius = 5000) => {
+  const fetchPrice = useCallback(async (lat, lng, fuelGrade = "regular", radius = 8046) => {
     if (!HERE_API_KEY) {
       setError("HERE API key not configured");
-      return null;
+      return getFallbackPrice(fuelGrade);
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      // HERE Fuel Prices API — search for fuel stations near a location
-      const fuelType = FUEL_TYPE_MAP[fuelGrade] || "regular";
+      const fuelType = FUEL_TYPE_MAP[fuelGrade] || "3";
 
+      // HERE Fuel Prices API
       const params = new URLSearchParams({
         apiKey: HERE_API_KEY,
-        in: `circle:${lat},${lng};r=${radius}`,
-        fuelType: fuelType,
-      });
-
-      // HERE Browse API — search for fuel stations nearby
-      const browseParams = new URLSearchParams({
-        apiKey: HERE_API_KEY,
-        at: `${lat},${lng}`,
-        categories: "700-7600-0116", // Petrol/gas station category
-        limit: 15,
+        prox: `${lat},${lng},${radius}`,
+        fueltype: fuelType,
+        maxresults: "15",
       });
 
       const response = await fetch(
-        `https://browse.search.hereapi.com/v1/browse?${browseParams}`
+        `https://fuel-v2.cc.api.here.com/fuel/stations.json?${params}`
       );
 
       if (!response.ok) {
-        throw new Error(`HERE API error: ${response.status}`);
+        // Try alternative endpoint format
+        const altParams = new URLSearchParams({
+          apiKey: HERE_API_KEY,
+          at: `${lat},${lng}`,
+          fuelType: fuelType,
+          limit: 15,
+        });
+
+        const altResponse = await fetch(
+          `https://fuel.api.here.com/fuel/stations?${altParams}`
+        );
+
+        if (!altResponse.ok) {
+          throw new Error(`HERE Fuel API: ${altResponse.status}`);
+        }
+
+        const altData = await altResponse.json();
+        return processFuelData(altData, fuelGrade);
       }
 
       const data = await response.json();
-
-      // HERE Browse returns stations, check for fuel prices in results
-      if (data.items && data.items.length > 0) {
-        // Use the Discover API for fuel prices at specific stations
-        const discoverParams = new URLSearchParams({
-          apiKey: HERE_API_KEY,
-          at: `${lat},${lng}`,
-          q: "gas station",
-          limit: 10,
-        });
-
-        const discoverResponse = await fetch(
-          `https://discover.search.hereapi.com/v1/discover?${discoverParams}`
-        );
-
-        if (discoverResponse.ok) {
-          const discoverData = await discoverResponse.json();
-          const result = processFuelData(discoverData, fuelGrade);
-          if (result && !result.isFallback) return result;
-        }
-      }
-
-      // If no pricing data available, use fallback
-      return getFallbackPrice(fuelGrade);
+      return processFuelData(data, fuelGrade);
     } catch (err) {
       console.warn("HERE Fuel API failed, using fallback prices:", err.message);
       setError(err.message);
-      // Return fallback average prices
       return getFallbackPrice(fuelGrade);
     } finally {
       setLoading(false);
@@ -100,37 +86,54 @@ export function useFuelPrice() {
   }, []);
 
   function processFuelData(data, fuelGrade) {
-    const items = data.items || data.stations || [];
+    // Handle different response formats from HERE
+    const rawStations = data.stations || data.items || data.results || [];
 
-    if (items.length === 0) {
+    if (rawStations.length === 0) {
       return getFallbackPrice(fuelGrade);
     }
 
-    // Extract prices from stations
     const prices = [];
     const stationList = [];
 
-    items.forEach((station) => {
-      const fuelOptions = station.fuelOptions || station.fuels || [];
-      fuelOptions.forEach((fuel) => {
-        if (fuel.price && fuel.price.value) {
-          prices.push(fuel.price.value);
-          stationList.push({
-            name: station.name || station.brand || "Unknown",
-            address: station.address?.label || "",
-            price: fuel.price.value,
-            currency: fuel.price.currency || "USD",
-            lastUpdated: fuel.lastUpdated || station.lastUpdated || "",
-          });
-        }
-      });
+    rawStations.forEach((station) => {
+      // Try different price field locations
+      const fuels = station.fuels || station.fuelOptions || station.fuelPrices || [];
+      let stationPrice = null;
+
+      if (Array.isArray(fuels)) {
+        fuels.forEach((fuel) => {
+          const price = fuel.price || fuel.amount || fuel.value;
+          if (price && typeof price === "number" && price > 0 && price < 10) {
+            stationPrice = price;
+          } else if (price && typeof price === "object" && price.value) {
+            stationPrice = price.value;
+          }
+        });
+      }
+
+      // Some responses have price directly on station
+      if (!stationPrice && station.price) {
+        stationPrice = typeof station.price === "number" ? station.price : station.price.value;
+      }
+
+      if (stationPrice && stationPrice > 0 && stationPrice < 10) {
+        prices.push(stationPrice);
+        stationList.push({
+          name: station.name || station.brand || station.stationName || "Station",
+          address: station.address?.label || station.vicinity || station.formattedAddress || "",
+          price: stationPrice,
+          currency: "USD",
+          lat: station.position?.lat || station.lat || 0,
+          lng: station.position?.lng || station.lng || 0,
+        });
+      }
     });
 
     if (prices.length === 0) {
       return getFallbackPrice(fuelGrade);
     }
 
-    // Sort by price
     stationList.sort((a, b) => a.price - b.price);
     setStations(stationList);
 
@@ -148,14 +151,13 @@ export function useFuelPrice() {
   return { fetchPrice, loading, error, stations };
 }
 
-// Fallback prices when API is unavailable
 function getFallbackPrice(grade) {
   const fallback = {
     regular: 3.45,
     midgrade: 3.85,
     premium: 4.15,
-    e88: 3.15,      // Typically 15-25 cents cheaper than regular
-    e85: 2.85,      // Typically 20-30% cheaper than regular
+    e88: 3.15,
+    e85: 2.85,
     diesel: 3.75,
   };
 
