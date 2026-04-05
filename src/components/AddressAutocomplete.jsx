@@ -16,9 +16,17 @@ export default function AddressAutocomplete({ value, onChange, onSelect, placeho
           types: ["address"],
         });
 
-        // Style the element
+        // Style the element to match our app
         autocomplete.style.width = "100%";
         autocomplete.style.fontSize = "14px";
+        autocomplete.style.setProperty("--gmpac-color-surface", "#ffffff");
+        autocomplete.style.setProperty("--gmpac-color-on-surface", "#1F2937");
+        autocomplete.style.setProperty("--gmpac-color-on-surface-variant", "#6B7280");
+        autocomplete.style.setProperty("--gmpac-color-outline", "#D1D5DB");
+        autocomplete.style.setProperty("--gmpac-color-primary", "#16785A");
+        autocomplete.style.borderRadius = "8px";
+        autocomplete.style.border = "1px solid #D1D5DB";
+        autocomplete.style.background = "#ffffff";
 
         autocomplete.addEventListener("gmp-select", async (e) => {
           const place = e.place;

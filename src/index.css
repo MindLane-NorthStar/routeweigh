@@ -8,3 +8,16 @@ body {
   color: #1F2937;
   margin: 0;
 }
+
+/* Google Places Autocomplete styling */
+gmpx-place-autocomplete,
+.gmpx-place-autocomplete {
+  --gmpac-color-surface: #ffffff !important;
+  --gmpac-color-on-surface: #1F2937 !important;
+  --gmpac-color-on-surface-variant: #6B7280 !important;
+  --gmpac-color-outline: #D1D5DB !important;
+  --gmpac-color-primary: #16785A !important;
+  background: #ffffff !important;
+  border-radius: 8px !important;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+}
