@@ -87,9 +87,9 @@ export async function loadSettings(userId) {
     .from("user_settings")
     .select("*")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
-  if (error && error.code !== "PGRST116") throw error; // PGRST116 = not found
+  if (error) { console.warn("loadSettings error:", error.message); return null; }
 
   if (!data) return null;
 
@@ -128,9 +128,9 @@ export async function loadVehicle(userId) {
     .select("*")
     .eq("user_id", userId)
     .eq("is_default", true)
-    .single();
+    .maybeSingle();
 
-  if (error && error.code !== "PGRST116") throw error;
+  if (error) { console.warn("loadVehicle error:", error.message); return null; }
 
   if (!data) return null;
 

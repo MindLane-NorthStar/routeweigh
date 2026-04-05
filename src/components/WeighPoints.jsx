@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAppContext } from "../context/AppContext";
+import AddressAutocomplete from "./AddressAutocomplete";
 
 const ICONS = ["🏠", "🏢", "🏡", "🏘️", "🏫", "🏥", "⛪", "🏪", "🎯", "📍"];
 const COLORS = ["#2E7D52", "#D97706", "#B8860B", "#16785A", "#DC2626", "#7C3AED", "#0891B2", "#BE185D", "#4F46E5", "#059669"];
@@ -12,7 +13,7 @@ export default function WeighPoints() {
   const { state, dispatch } = useAppContext();
   const [adding, setAdding] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ label: "", address: "", icon: "📍", color: "#2E7D52" });
+  const [form, setForm] = useState({ label: "", address: "", icon: "📍", color: "#2E7D52", lat: 0, lng: 0 });
 
   if (!state.showWeighPoints) return null;
 
@@ -21,9 +22,11 @@ export default function WeighPoints() {
   const handleAdd = async () => {
     if (!form.label.trim() || !form.address.trim()) return;
 
-    // Try to geocode the address using Google Maps
-    let lat = 0, lng = 0;
-    if (window.google?.maps) {
+    // Use lat/lng from autocomplete, or geocode as fallback
+    let lat = form.lat || 0;
+    let lng = form.lng || 0;
+
+    if (lat === 0 && lng === 0 && window.google?.maps) {
       try {
         const geocoder = new window.google.maps.Geocoder();
         const result = await new Promise((resolve, reject) => {
@@ -145,11 +148,11 @@ export default function WeighPoints() {
               onChange={(e) => setForm({ ...form, label: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-scenario-a/30"
             />
-            <input
-              type="text"
-              placeholder="Full address"
+            <AddressAutocomplete
               value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              onChange={(val) => setForm({ ...form, address: val })}
+              onSelect={({ address, lat, lng }) => setForm({ ...form, address, lat, lng })}
+              placeholder="Start typing an address..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-scenario-a/30"
             />
             <div className="flex gap-3">

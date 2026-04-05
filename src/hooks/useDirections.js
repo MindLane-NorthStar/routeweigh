@@ -5,11 +5,6 @@ import { getToll } from "../utils/tollData";
 
 export function useDirections() {
   const { state } = useAppContext();
-  const weighpoints = state.weighpoints || [];
-
-  function getWeighPoint(id) {
-    return weighpoints.find((w) => w.id === id);
-  }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const serviceRef = useRef(null);
@@ -100,14 +95,18 @@ export function useDirections() {
       setLoading(true);
       setError(null);
 
+      // Read weighpoints fresh from state each time
+      const currentWeighpoints = state.weighpoints || [];
+      const getWP = (id) => currentWeighpoints.find((w) => w.id === id);
+
       try {
-        const origin = getWeighPoint(scenario.origin);
+        const origin = getWP(scenario.origin);
         if (!origin) throw new Error("Origin not found");
 
         // Build the chain: origin → stop1 → stop2 → ... → lastStop
         const chain = [origin];
         for (const stopId of scenario.stops) {
-          const wp = getWeighPoint(stopId);
+          const wp = getWP(stopId);
           if (wp) chain.push(wp);
         }
 
@@ -134,7 +133,7 @@ export function useDirections() {
         return null;
       }
     },
-    [fetchLeg]
+    [fetchLeg, state.weighpoints]
   );
 
   return { calculateRoute, loading, error };
