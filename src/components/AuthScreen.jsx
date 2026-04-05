@@ -29,18 +29,18 @@ export default function AuthScreen({ onSignIn, onSignUp, onGuest }) {
 
   return (
     <div className="min-h-screen bg-sky-bg">
-      {/* Hero — 40vh, image fades into page bg */}
-      <div className="relative w-full h-[40vh] min-h-[200px] max-h-[320px] overflow-hidden">
+      {/* Hero — compact, cropped to show sky + buttes, not road */}
+      <div className="relative w-full h-[35vh] min-h-[180px] max-h-[260px] overflow-hidden">
         <img
           src="/hero.jpg"
           alt="Highway stretching into the distance"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-top"
         />
         <div className="absolute inset-0 bg-black/45" />
         {/* Bottom fade into page background */}
         <div className="absolute bottom-0 left-0 right-0 h-16" style={{ background: 'linear-gradient(to bottom, transparent, #D5DFEB)' }} />
 
-        <div className="relative z-10 flex flex-col items-center pt-10">
+        <div className="relative z-10 flex flex-col items-center pt-6">
           <h1 className="font-extrabold text-[44px] tracking-[5px] leading-none">
             <span className="text-accent">ROUTE</span>
             <span className="text-white">WEIGH</span>
