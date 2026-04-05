@@ -10,6 +10,7 @@ import RouteMap from "./components/RouteMap";
 import ResultsPanel from "./components/ResultsPanel";
 import WeighStation from "./components/WeighStation";
 import AiAssistant from "./components/AiAssistant";
+import TollEditor from "./components/TollEditor";
 import AuthScreen from "./components/AuthScreen";
 import { useDirections } from "./hooks/useDirections";
 import { calculateLegCost, calculateScenarioTotal } from "./utils/costEngine";
@@ -126,6 +127,7 @@ function AppContent({ auth }) {
       <ControlBar auth={auth} />
       <main className="max-w-4xl mx-auto px-4 pt-3 pb-12">
         <WeighPoints />
+        {state.showTolls && <TollEditor />}
         <AiAssistant />
         <ScenarioPair />
 

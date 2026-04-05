@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useAppContext } from "../context/AppContext";
 import { getWaypoints, isTurnpikeLeg } from "../utils/routeRules";
-import { getToll } from "../utils/tollData";
+import { getToll, fetchTollFromAPI } from "../utils/tollData";
 
 export function useDirections() {
   const { state } = useAppContext();
@@ -79,7 +79,9 @@ export function useDirections() {
               polyline: result.routes[0].overview_polyline,
               directionsResult: result,
               isTurnpike: isTurnpikeLeg(from.id, to.id),
-              tollCost: getToll(from.id, to.id),
+              tollCost: getToll(from.id, to.id), // User override
+              _from: from,
+              _to: to,
             });
           } else {
             reject(new Error(`Directions failed: ${status}`));
@@ -89,6 +91,27 @@ export function useDirections() {
     },
     [getService]
   );
+
+  // Fetch tolls from API for legs that don't have user-defined tolls
+  const enrichWithTolls = useCallback(async (legs, departureTime) => {
+    const enriched = [];
+    for (const leg of legs) {
+      if (leg.tollCost > 0) {
+        // User already set a toll — keep it
+        enriched.push(leg);
+      } else {
+        // Try API
+        const tollResult = await fetchTollFromAPI(leg._from || leg.from, leg._to || leg.to, departureTime);
+        enriched.push({
+          ...leg,
+          tollCost: tollResult.tollCost,
+          hasTolls: tollResult.hasTolls,
+          isTurnpike: leg.isTurnpike || tollResult.hasTolls,
+        });
+      }
+    }
+    return enriched;
+  }, []);
 
   const calculateRoute = useCallback(
     async (scenario) => {
@@ -138,15 +161,18 @@ export function useDirections() {
           legs.push(leg);
         }
 
+        // Enrich legs with toll data from API
+        const enrichedLegs = await enrichWithTolls(legs, scenario.departureTime);
+
         setLoading(false);
-        return legs;
+        return enrichedLegs;
       } catch (err) {
         setError(err.message);
         setLoading(false);
         return null;
       }
     },
-    [fetchLeg, state.weighpoints]
+    [fetchLeg, enrichWithTolls, state.weighpoints]
   );
 
   return { calculateRoute, loading, error };

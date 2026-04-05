@@ -127,6 +127,18 @@ export default function ControlBar({ auth }) {
             📍 WeighPoints
           </button>
 
+          {/* Tolls toggle */}
+          <button
+            onClick={() => dispatch({ type: "TOGGLE_TOLLS" })}
+            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+              state.showTolls
+                ? "bg-red-50 text-red-600 border-red-200"
+                : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"
+            }`}
+          >
+            🛣️ Tolls
+          </button>
+
           {/* Pillow Premium toggle */}
           <button
             onClick={() => setShowPillow(!showPillow)}

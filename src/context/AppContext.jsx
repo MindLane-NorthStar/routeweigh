@@ -46,6 +46,7 @@ const initialState = {
   heroUrl: loadFromStorage("routeweigh_heroUrl", null) || "/hero.jpg",
   showWeighPoints: false,
   weighpoints: loadWeighPoints(),
+  showTolls: false,
   scenarios: {
     A: { id: "A", origin: "", stops: [], departureTime: "" },
     B: { id: "B", origin: "", stops: [], departureTime: "" },
@@ -65,6 +66,8 @@ function appReducer(state, action) {
       return { ...state, heroUrl: action.payload };
     case "TOGGLE_WEIGHPOINTS":
       return { ...state, showWeighPoints: !state.showWeighPoints };
+    case "TOGGLE_TOLLS":
+      return { ...state, showTolls: !state.showTolls };
 
     // WeighPoint CRUD
     case "ADD_WEIGHPOINT":
