@@ -30,31 +30,33 @@ export default function AuthScreen({ onSignIn, onSignUp, onGuest }) {
   return (
     <div className="min-h-screen bg-sky-bg">
       {/* Hero image */}
-      <div className="relative w-full h-[340px] overflow-hidden">
+      <div className="relative w-full min-h-[520px] overflow-hidden">
         <img
           src="/hero.jpg"
           alt="Highway stretching into the distance"
-          className="w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/50" />
-        <div className="absolute top-[8%] left-0 right-0 text-center">
+        <div className="absolute inset-0 bg-black/[0.58]" />
+
+        <div className="relative z-10 flex flex-col items-center pt-12 px-5">
+          {/* Title */}
           <h1 className="font-extrabold text-[44px] tracking-[5px] leading-none">
             <span className="text-accent">ROUTE</span>
             <span className="text-white">WEIGH</span>
           </h1>
-          <p className="text-[12px] tracking-[4px] text-white/80 uppercase mt-2">
+
+          {/* Subtitle — 12px gap */}
+          <p className="text-[12px] tracking-[4px] text-white/85 uppercase mt-3">
             Know Before You Go
           </p>
-        </div>
 
-        {/* Explainer text over hero */}
-        <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 pb-6">
-          <p className="text-white/70 text-[14px] leading-[1.7] text-center max-w-[600px]">
+          {/* Explainer — 24px gap */}
+          <p className="text-white/70 text-[13px] sm:text-[14px] leading-[1.7] text-center max-w-[500px] mt-6 px-5">
             We all have multiple places to be and multiple ways to get there.
             RouteWeigh helps determine the smartest path. Build two multi-stop
             driving scenarios, rearrange the order, and let RouteWeigh do what
-            it does best — <span className="font-bold text-white/90">WEIGH YOUR ROUTES</span> against
-            each other — showing you the real difference in time and money between the two.
+            it does best — weigh your routes against each other — showing you the
+            real difference in time and money between the two.
             Describe your situation in plain English and AI builds both scenarios.
             Every route uses Google's latest maps and live traffic data, with fuel
             costs pulled from current gas prices in your area. No guessing — just answers.
@@ -62,7 +64,7 @@ export default function AuthScreen({ onSignIn, onSignUp, onGuest }) {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 -mt-6 relative z-10 pb-12">
+      <div className="max-w-md mx-auto px-4 mt-8 pb-12">
         {/* Auth Card */}
         <div className="bg-white rounded-2xl shadow-card border border-gray-200 p-6">
           <h2 className="text-lg font-bold text-body mb-4">
