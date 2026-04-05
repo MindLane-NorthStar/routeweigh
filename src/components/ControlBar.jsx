@@ -68,7 +68,7 @@ export default function ControlBar({ auth }) {
               step="0.01"
               min="0"
               value={fuelPrice}
-              onChange={(e) => updateSetting("fuelPrice", parseFloat(e.target.value) || 0)}
+              onChange={(e) => updateSetting("fuelPrice", e.target.value === "" ? "" : parseFloat(e.target.value) || 0)}
               className="w-20 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
             {fetchingFuel && <span className="text-xs text-gray-400 animate-pulse">updating...</span>}
@@ -93,7 +93,7 @@ export default function ControlBar({ auth }) {
               min="1"
               value={mpg}
               disabled={mpgLocked}
-              onChange={(e) => updateSetting("mpg", parseFloat(e.target.value) || 1)}
+              onChange={(e) => updateSetting("mpg", e.target.value === "" ? "" : parseFloat(e.target.value) || 0)}
               className="w-16 px-2 py-1.5 border border-gray-300 rounded-lg text-sm disabled:bg-gray-50 disabled:text-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
             <button
