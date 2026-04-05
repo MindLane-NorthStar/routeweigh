@@ -1,18 +1,7 @@
-import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
 
 export default function Hero() {
-  const { state, dispatch } = useAppContext();
-  const [showInput, setShowInput] = useState(false);
-  const [urlDraft, setUrlDraft] = useState("");
-
-  const handleChangePhoto = () => {
-    if (showInput && urlDraft.trim()) {
-      dispatch({ type: "SET_HERO_URL", payload: urlDraft.trim() });
-      setUrlDraft("");
-    }
-    setShowInput(!showInput);
-  };
+  const { state } = useAppContext();
 
   return (
     <div className="relative w-full h-[260px] overflow-hidden">
@@ -32,26 +21,6 @@ export default function Hero() {
         <p className="text-[12px] tracking-[4px] text-white/80 uppercase mt-2">
           Know Before You Go
         </p>
-      </div>
-
-      {/* Change Photo button */}
-      <div className="absolute bottom-3 right-3 flex items-center gap-2">
-        {showInput && (
-          <input
-            type="text"
-            placeholder="Paste image URL..."
-            value={urlDraft}
-            onChange={(e) => setUrlDraft(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleChangePhoto()}
-            className="px-2 py-1 text-xs rounded bg-black/60 text-white border border-white/30 placeholder-white/50 w-48 focus:outline-none focus:border-white/60"
-          />
-        )}
-        <button
-          onClick={handleChangePhoto}
-          className="px-2 py-1 text-xs rounded bg-black/50 text-white/80 hover:text-white hover:bg-black/70 transition-colors"
-        >
-          {showInput ? "Save" : "\u{1F4F7} Change Photo"}
-        </button>
       </div>
     </div>
   );
