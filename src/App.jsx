@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { AppProvider, useAppContext } from "./context/AppContext";
+import { useAuth } from "./hooks/useAuth";
 import Hero from "./components/Hero";
 import ControlBar from "./components/ControlBar";
 import WeighPoints from "./components/WeighPoints";
@@ -9,6 +10,8 @@ import RouteMap from "./components/RouteMap";
 import ResultsPanel from "./components/ResultsPanel";
 import WeighStation from "./components/WeighStation";
 import AiAssistant from "./components/AiAssistant";
+import AuthScreen from "./components/AuthScreen";
+import UserMenu from "./components/UserMenu";
 import { useDirections } from "./hooks/useDirections";
 import { calculateLegCost, calculateScenarioTotal } from "./utils/costEngine";
 
@@ -30,7 +33,6 @@ function AppContent() {
 
     setCalculated(false);
 
-    // Calculate both routes
     const [rawLegsA, rawLegsB] = await Promise.all([
       scenarioA.stops.length > 0 ? calculateRoute(scenarioA) : null,
       scenarioB.stops.length > 0 ? calculateRoute(scenarioB) : null,
@@ -51,7 +53,6 @@ function AppContent() {
     setCalculated(true);
   }, [scenarioA, scenarioB, state.settings, calculateRoute]);
 
-  // Auto-scroll to WeighStation after calculation
   useEffect(() => {
     if (calculated && totalA && totalB && weighStationRef.current) {
       setTimeout(() => {
@@ -69,7 +70,6 @@ function AppContent() {
         <AiAssistant />
         <ScenarioPair />
 
-        {/* Compare Button */}
         <div className="flex justify-center my-6">
           <button
             onClick={runComparison}
@@ -95,10 +95,8 @@ function AppContent() {
           </div>
         )}
 
-        {/* Map */}
         {(legsA || legsB) && <RouteMap legsA={legsA} legsB={legsB} />}
 
-        {/* Results Side-by-Side */}
         {(legsA || legsB) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
             {legsA && <ResultsPanel id="A" legs={legsA} total={totalA} />}
@@ -106,7 +104,6 @@ function AppContent() {
           </div>
         )}
 
-        {/* WeighStation Verdict */}
         <div ref={weighStationRef}>
           <WeighStation
             totalA={totalA}
@@ -122,9 +119,40 @@ function AppContent() {
 }
 
 function App() {
+  const auth = useAuth();
+
+  // Show loading spinner while checking auth
+  if (auth.loading) {
+    return (
+      <div className="min-h-screen bg-sky-bg flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-3 border-gray-300 border-t-gray-800 rounded-full" />
+      </div>
+    );
+  }
+
+  // Show auth screen if not logged in and not guest
+  if (!auth.isAuthenticated && !auth.isGuest) {
+    return (
+      <AuthScreen
+        onSignIn={auth.signIn}
+        onSignUp={auth.signUp}
+        onGuest={auth.continueAsGuest}
+      />
+    );
+  }
+
   return (
     <AppProvider>
       <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+        {/* User menu floats top-right */}
+        <div className="fixed top-3 right-3 z-[60]">
+          <UserMenu
+            user={auth.user}
+            isGuest={auth.isGuest}
+            onSignOut={auth.signOut}
+            onUpgrade={auth.upgradeFromGuest}
+          />
+        </div>
         <AppContent />
       </APIProvider>
     </AppProvider>
