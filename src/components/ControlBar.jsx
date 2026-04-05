@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
+import { useFuelPrice, FUEL_LABELS } from "../hooks/useFuelPrice";
 
 const FUEL_GRADES = [
   { value: "regular", label: "Regular" },
   { value: "midgrade", label: "Midgrade" },
   { value: "premium", label: "Premium" },
+  { value: "e88", label: "Unleaded 88 (E88)" },
+  { value: "e85", label: "E85" },
   { value: "diesel", label: "Diesel" },
 ];
 
@@ -13,7 +16,8 @@ export default function ControlBar() {
   const { fuelPrice, fuelGrade, mpg, mpgLocked, pillowPremium, autoFuelPrice, zipCode } = state.settings;
   const [showPillow, setShowPillow] = useState(pillowPremium > 0);
   const [showVehicle, setShowVehicle] = useState(false);
-  const [fetchingFuel, setFetchingFuel] = useState(false);
+  const [cheapestStation, setCheapestStation] = useState(null);
+  const { fetchPrice, loading: fetchingFuel, error: fuelError, stations } = useFuelPrice();
 
   const updateSetting = (field, value) =>
     dispatch({ type: "UPDATE_SETTINGS", payload: { [field]: value } });
@@ -21,27 +25,34 @@ export default function ControlBar() {
   // Fetch fuel price on load and when grade/zip changes
   useEffect(() => {
     if (!autoFuelPrice) return;
-    fetchFuelPrice();
+    handleFetchFuelPrice();
   }, [fuelGrade, zipCode, autoFuelPrice]);
 
-  async function fetchFuelPrice() {
-    setFetchingFuel(true);
-    try {
-      // GasBuddy doesn't have a public API, so we use a CORS proxy + scraping approach
-      // For now, use average national prices as fallback
-      const avgPrices = {
-        regular: 3.45,
-        midgrade: 3.85,
-        premium: 4.15,
-        diesel: 3.75,
-      };
-      // Simulate a brief fetch
-      await new Promise((r) => setTimeout(r, 500));
-      updateSetting("fuelPrice", avgPrices[fuelGrade] || 3.45);
-    } catch (e) {
-      console.warn("Fuel price fetch failed:", e);
-    } finally {
-      setFetchingFuel(false);
+  async function handleFetchFuelPrice() {
+    // Get lat/lng from zip code using the first weighpoint as fallback
+    let lat = 41.1137, lng = -81.4785; // Default: Cuyahoga Falls area
+
+    // Try to geocode the zip code
+    if (window.google?.maps && zipCode?.length === 5) {
+      try {
+        const geocoder = new window.google.maps.Geocoder();
+        const result = await new Promise((resolve, reject) => {
+          geocoder.geocode({ address: zipCode }, (results, status) => {
+            if (status === "OK" && results[0]) resolve(results[0]);
+            else reject(status);
+          });
+        });
+        lat = result.geometry.location.lat();
+        lng = result.geometry.location.lng();
+      } catch (e) {
+        console.warn("ZIP geocoding failed, using default location");
+      }
+    }
+
+    const result = await fetchPrice(lat, lng, fuelGrade);
+    if (result) {
+      updateSetting("fuelPrice", result.average);
+      setCheapestStation(result.cheapestStation);
     }
   }
 
@@ -165,12 +176,20 @@ export default function ControlBar() {
               />
             </label>
             <button
-              onClick={fetchFuelPrice}
+              onClick={handleFetchFuelPrice}
               disabled={fetchingFuel}
               className="text-xs text-blue-500 hover:text-blue-700 disabled:opacity-50"
             >
               {fetchingFuel ? "⏳ Fetching..." : "🔄 Refresh Price"}
             </button>
+            {cheapestStation && (
+              <span className="text-xs text-green-600">
+                💰 {cheapestStation.name}: ${cheapestStation.price.toFixed(2)}/gal
+              </span>
+            )}
+            {fuelError && (
+              <span className="text-xs text-amber-500">Using avg prices</span>
+            )}
             <label className="flex items-center gap-1.5 text-xs text-gray-500">
               <input
                 type="checkbox"
