@@ -2,7 +2,7 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const apiKey = process.env.VITE_GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "Google API key not configured" });
 
   const { origin, destination, departureTime } = req.body;

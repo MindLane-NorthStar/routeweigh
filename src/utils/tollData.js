@@ -39,8 +39,9 @@ export function getAllUserTolls() {
   return { ...userTolls };
 }
 
-// Fetch toll from Google Routes API via serverless function
+// Fetch toll from Google Routes API
 export async function fetchTollFromAPI(origin, destination, departureTime) {
+  // Try serverless function first (Vercel deployed)
   try {
     const response = await fetch("/api/tolls", {
       method: "POST",
@@ -52,15 +53,69 @@ export async function fetchTollFromAPI(origin, destination, departureTime) {
       }),
     });
 
-    if (!response.ok) return { tollCost: 0, hasTolls: false };
+    if (response.ok) {
+      const data = await response.json();
+      if (data.tollCost > 0 || data.hasTolls) {
+        return { tollCost: data.tollCost || 0, hasTolls: data.hasTolls || false };
+      }
+    }
+  } catch (e) {
+    // Serverless not available — try direct API call
+  }
+
+  // Fallback: call Routes API directly (works for local dev)
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  if (!apiKey) return { tollCost: 0, hasTolls: false };
+
+  try {
+    const body = {
+      origin: { location: { latLng: { latitude: origin.lat, longitude: origin.lng } } },
+      destination: { location: { latLng: { latitude: destination.lat, longitude: destination.lng } } },
+      travelMode: "DRIVE",
+      routingPreference: "TRAFFIC_AWARE",
+      extraComputations: ["TOLLS"],
+      routeModifiers: { vehicleInfo: { emissionType: "GASOLINE" } },
+    };
+
+    if (departureTime) {
+      body.departureTime = new Date(departureTime).toISOString();
+    }
+
+    const response = await fetch(
+      "https://routes.googleapis.com/directions/v2:computeRoutes",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          "X-Goog-FieldMask": "routes.travelAdvisory.tollInfo",
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+      console.warn("Routes API toll fetch:", response.status);
+      return { tollCost: 0, hasTolls: false };
+    }
 
     const data = await response.json();
-    return {
-      tollCost: data.tollCost || 0,
-      hasTolls: data.hasTolls || false,
-    };
+    let tollCost = 0;
+    let hasTolls = false;
+
+    const tollInfo = data.routes?.[0]?.travelAdvisory?.tollInfo;
+    if (tollInfo?.estimatedPrice) {
+      hasTolls = true;
+      for (const price of tollInfo.estimatedPrice) {
+        if (price.currencyCode === "USD") {
+          tollCost = parseFloat(price.units || 0) + parseFloat(price.nanos || 0) / 1e9;
+        }
+      }
+    }
+
+    return { tollCost: Math.round(tollCost * 100) / 100, hasTolls };
   } catch (e) {
-    console.warn("Toll API fetch failed:", e.message);
+    console.warn("Toll fetch failed:", e.message);
     return { tollCost: 0, hasTolls: false };
   }
 }
