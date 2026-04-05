@@ -1,5 +1,4 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
-import { DEFAULT_WEIGHPOINTS } from "../data/weighpoints";
 import { supabase } from "../lib/supabase";
 import {
   loadAllUserData,
@@ -19,26 +18,26 @@ function loadFromStorage(key, fallback) {
 }
 
 const defaultSettings = {
-  fuelPrice: 3.45,
+  fuelPrice: 0,
   fuelGrade: "regular",
-  mpg: 26,
+  mpg: 0,
   mpgLocked: false,
   pillowPremium: 0,
   vehicleName: "",
-  autoFuelPrice: true,
+  autoFuelPrice: false,
   zipCode: "",
 };
 
 const defaultVehicle = {
-  name: "My Vehicle",
-  mpg: 26,
+  name: "",
+  mpg: 0,
   fuelGrade: "regular",
 };
 
 function loadWeighPoints() {
   const saved = loadFromStorage("routeweigh_weighpoints", null);
   if (saved && saved.length > 0) return saved;
-  return DEFAULT_WEIGHPOINTS;
+  return []; // Start empty — user adds their own
 }
 
 const initialState = {
