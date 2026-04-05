@@ -48,33 +48,47 @@ export function useFuelPrice() {
         fuelType: fuelType,
       });
 
+      // HERE Browse API — search for fuel stations nearby
+      const browseParams = new URLSearchParams({
+        apiKey: HERE_API_KEY,
+        at: `${lat},${lng}`,
+        categories: "700-7600-0116", // Petrol/gas station category
+        limit: 15,
+      });
+
       const response = await fetch(
-        `https://fuel.here.com/v1/stations?${params}`
+        `https://browse.search.hereapi.com/v1/browse?${browseParams}`
       );
 
       if (!response.ok) {
-        // Fallback: try the browse endpoint
-        const browseParams = new URLSearchParams({
-          apiKey: HERE_API_KEY,
-          at: `${lat},${lng}`,
-          fuelType: fuelType,
-          limit: 10,
-        });
-
-        const browseResponse = await fetch(
-          `https://fuel.here.com/v1/stations/browse?${browseParams}`
-        );
-
-        if (!browseResponse.ok) {
-          throw new Error(`HERE API error: ${browseResponse.status}`);
-        }
-
-        const browseData = await browseResponse.json();
-        return processFuelData(browseData, fuelGrade);
+        throw new Error(`HERE API error: ${response.status}`);
       }
 
       const data = await response.json();
-      return processFuelData(data, fuelGrade);
+
+      // HERE Browse returns stations, check for fuel prices in results
+      if (data.items && data.items.length > 0) {
+        // Use the Discover API for fuel prices at specific stations
+        const discoverParams = new URLSearchParams({
+          apiKey: HERE_API_KEY,
+          at: `${lat},${lng}`,
+          q: "gas station",
+          limit: 10,
+        });
+
+        const discoverResponse = await fetch(
+          `https://discover.search.hereapi.com/v1/discover?${discoverParams}`
+        );
+
+        if (discoverResponse.ok) {
+          const discoverData = await discoverResponse.json();
+          const result = processFuelData(discoverData, fuelGrade);
+          if (result && !result.isFallback) return result;
+        }
+      }
+
+      // If no pricing data available, use fallback
+      return getFallbackPrice(fuelGrade);
     } catch (err) {
       console.warn("HERE Fuel API failed, using fallback prices:", err.message);
       setError(err.message);
