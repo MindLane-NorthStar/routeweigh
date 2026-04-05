@@ -12,8 +12,8 @@ export default function Hero() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-transparent" />
 
-      {/* Title — positioned in upper portion over sky */}
-      <div className="absolute top-[15%] left-0 right-0 text-center">
+      {/* Title — positioned in upper 30% over sky */}
+      <div className="absolute top-[8%] left-0 right-0 text-center">
         <h1 className="font-extrabold text-[44px] tracking-[5px] leading-none">
           <span className="text-accent">ROUTE</span>
           <span className="text-white">WEIGH</span>

@@ -67,6 +67,9 @@ function AppContent() {
       <ControlBar />
       <main className="max-w-4xl mx-auto px-4 pt-6 pb-12">
         <WeighPoints />
+        <p className="text-center text-gray-400 text-[13px] my-3">
+          Two routes. Real traffic. Real fuel costs. Build your scenarios below or tell the AI what you need.
+        </p>
         <AiAssistant />
         <ScenarioPair />
 
