@@ -28,16 +28,53 @@ export default function AuthScreen({ onSignIn, onSignUp, onGuest }) {
   };
 
   return (
-    <div className="min-h-screen bg-sky-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold tracking-widest">
+    <div className="min-h-screen bg-sky-bg">
+      {/* Hero image — same as main app */}
+      <div className="relative w-full h-[260px] overflow-hidden">
+        <img
+          src="/hero.jpg"
+          alt="Highway stretching into the distance"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-transparent" />
+        <div className="absolute top-[15%] left-0 right-0 text-center">
+          <h1 className="font-extrabold text-[44px] tracking-[5px] leading-none">
             <span className="text-accent">ROUTE</span>
-            <span className="text-body">WEIGH</span>
+            <span className="text-white">WEIGH</span>
           </h1>
-          <p className="text-xs tracking-[4px] text-muted mt-1 uppercase">
+          <p className="text-[12px] tracking-[4px] text-white/80 uppercase mt-2">
             Know Before You Go
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-md mx-auto px-4 -mt-8 relative z-10 pb-12">
+        {/* Explainer card */}
+        <div className="bg-white rounded-2xl shadow-card border border-gray-200 p-5 mb-4">
+          <p className="text-sm text-gray-600 leading-relaxed">
+            We all have multiple places to be and multiple ways to get there.
+            <span className="font-semibold text-gray-800"> RouteWeigh helps determine the smartest path.</span>
+          </p>
+          <p className="text-sm text-gray-500 leading-relaxed mt-3">
+            Build two multi-stop scenarios, rearrange the order, and let RouteWeigh do what it does best — weighing
+            your routes against each other and showing you the real cost in time and money between the two.
+          </p>
+          <div className="flex flex-wrap gap-2 mt-4">
+            <span className="inline-flex items-center gap-1.5 text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200">
+              ✨ AI-powered
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full border border-green-200">
+              🗺️ Live traffic
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full border border-blue-200">
+              ⛽ Real gas prices
+            </span>
+          </div>
+          <p className="text-xs text-gray-400 leading-relaxed mt-3">
+            Skip the dropdowns and just tell RouteWeigh what you need in plain English — like
+            <span className="italic text-gray-500"> "I'm at Mom's and need to be at work by 7am, should I go home tonight?"</span>
+            {" "}Routes are calculated using Google's latest maps and live traffic data, and fuel costs are based on
+            current gas prices in your area — so your numbers are always real, never guesswork.
           </p>
         </div>
 
