@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function AuthScreen({ onSignIn, onSignUp, onGuest }) {
-  const [mode, setMode] = useState("signin"); // signin | signup
+  const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -29,43 +29,44 @@ export default function AuthScreen({ onSignIn, onSignUp, onGuest }) {
 
   return (
     <div className="min-h-screen bg-sky-bg">
-      {/* Hero image */}
-      <div className="relative w-full min-h-[520px] overflow-hidden">
+      {/* Hero — 40vh, image fades into page bg */}
+      <div className="relative w-full h-[40vh] min-h-[200px] max-h-[320px] overflow-hidden">
         <img
           src="/hero.jpg"
           alt="Highway stretching into the distance"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/[0.58]" />
+        <div className="absolute inset-0 bg-black/45" />
+        {/* Bottom fade into page background */}
+        <div className="absolute bottom-0 left-0 right-0 h-16" style={{ background: 'linear-gradient(to bottom, transparent, #D5DFEB)' }} />
 
-        <div className="relative z-10 flex flex-col items-center pt-12 px-5">
-          {/* Title */}
+        <div className="relative z-10 flex flex-col items-center pt-10">
           <h1 className="font-extrabold text-[44px] tracking-[5px] leading-none">
             <span className="text-accent">ROUTE</span>
             <span className="text-white">WEIGH</span>
           </h1>
-
-          {/* Subtitle — 12px gap */}
           <p className="text-[12px] tracking-[4px] text-white/85 uppercase mt-3">
             Know Before You Go
-          </p>
-
-          {/* Explainer — 24px gap */}
-          <p className="text-white/70 text-[13px] sm:text-[14px] leading-[1.7] text-center max-w-[500px] mt-6 px-5">
-            We all have multiple places to be and multiple ways to get there.
-            RouteWeigh helps determine the smartest path. Build two multi-stop
-            driving scenarios, rearrange the order, and let RouteWeigh do what
-            it does best — weigh your routes against each other — showing you the
-            real difference in time and money between the two.
-            Describe your situation in plain English and AI builds both scenarios.
-            Every route uses Google's latest maps and live traffic data, with fuel
-            costs pulled from current gas prices in your area. No guessing — just answers.
           </p>
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 mt-8 pb-12">
-        {/* Auth Card */}
+      {/* Explainer — on page bg, not on image */}
+      <div className="flex justify-center px-6 py-5">
+        <p className="text-[13px] text-gray-500 leading-[1.6] text-center max-w-[500px]">
+          We all have multiple places to be and multiple ways to get there.
+          RouteWeigh helps determine the smartest path. Build two multi-stop
+          driving scenarios, rearrange the order, and let RouteWeigh do what
+          it does best — weigh your routes against each other — showing you the
+          real difference in time and money between the two.
+          Describe your situation in plain English and AI builds both scenarios.
+          Every route uses Google's latest maps and live traffic data, with fuel
+          costs pulled from current gas prices in your area. No guessing — just answers.
+        </p>
+      </div>
+
+      {/* Auth Card — tight below explainer */}
+      <div className="max-w-sm mx-auto px-4 pb-12">
         <div className="bg-white rounded-2xl shadow-card border border-gray-200 p-6">
           <h2 className="text-lg font-bold text-body mb-4">
             {mode === "signin" ? "Welcome Back" : "Create Account"}
