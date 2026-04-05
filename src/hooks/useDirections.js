@@ -99,14 +99,27 @@ export function useDirections() {
       const currentWeighpoints = state.weighpoints || [];
       const getWP = (id) => currentWeighpoints.find((w) => w.id === id);
 
+      // Resolve a stop (WeighPoint ID, object with type, or legacy string) to a location
+      function resolveLocation(stop) {
+        if (!stop) return null;
+        // Legacy string format — WeighPoint ID
+        if (typeof stop === "string") return getWP(stop);
+        // New object format
+        if (stop.type === "weighpoint") return getWP(stop.id);
+        if (stop.type === "address" && stop.lat && stop.lng) {
+          return { id: "adhoc", label: stop.address?.split(",")[0] || "Stop", address: stop.address, lat: stop.lat, lng: stop.lng, icon: "📍", color: "#999" };
+        }
+        return null;
+      }
+
       try {
-        const origin = getWP(scenario.origin);
+        const origin = resolveLocation(scenario.origin) || getWP(scenario.origin);
         if (!origin) throw new Error("Origin not found");
 
         // Build the chain: origin → stop1 → stop2 → ... → lastStop
         const chain = [origin];
-        for (const stopId of scenario.stops) {
-          const wp = getWP(stopId);
+        for (const stop of scenario.stops) {
+          const wp = resolveLocation(stop);
           if (wp) chain.push(wp);
         }
 
