@@ -1,5 +1,12 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 import { DEFAULT_WEIGHPOINTS } from "../data/weighpoints";
+import { supabase } from "../lib/supabase";
+import {
+  loadAllUserData,
+  replaceAllWeighPoints,
+  saveSettings,
+  saveVehicle,
+} from "../lib/sync";
 
 const AppContext = createContext();
 
@@ -13,13 +20,13 @@ function loadFromStorage(key, fallback) {
 
 const defaultSettings = {
   fuelPrice: 3.45,
-  fuelGrade: "regular", // regular, midgrade, premium, diesel
+  fuelGrade: "regular",
   mpg: 26,
   mpgLocked: false,
   pillowPremium: 0,
   vehicleName: "",
-  autoFuelPrice: true, // auto-fetch from GasBuddy
-  zipCode: "44221", // for fuel price lookup
+  autoFuelPrice: true,
+  zipCode: "",
 };
 
 const defaultVehicle = {
@@ -31,7 +38,6 @@ const defaultVehicle = {
 function loadWeighPoints() {
   const saved = loadFromStorage("routeweigh_weighpoints", null);
   if (saved && saved.length > 0) return saved;
-  // First-time users get defaults — they can delete/modify later
   return DEFAULT_WEIGHPOINTS;
 }
 
@@ -46,6 +52,8 @@ const initialState = {
     B: { id: "B", origin: "", stops: [], departureTime: "" },
   },
   results: { A: null, B: null },
+  userId: null, // Set when user logs in
+  syncing: false,
 };
 
 function appReducer(state, action) {
@@ -76,6 +84,8 @@ function appReducer(state, action) {
       };
     case "RESET_WEIGHPOINTS":
       return { ...state, weighpoints: [] };
+    case "SET_WEIGHPOINTS":
+      return { ...state, weighpoints: action.payload };
 
     // Scenarios
     case "UPDATE_SCENARIO":
@@ -91,6 +101,26 @@ function appReducer(state, action) {
         ...state,
         results: { ...state.results, [action.id]: action.payload },
       };
+
+    // Auth
+    case "SET_USER_ID":
+      return { ...state, userId: action.payload };
+    case "SET_SYNCING":
+      return { ...state, syncing: action.payload };
+
+    // Bulk load from cloud
+    case "LOAD_USER_DATA":
+      return {
+        ...state,
+        weighpoints: action.payload.weighpoints || state.weighpoints,
+        settings: action.payload.settings
+          ? { ...state.settings, ...action.payload.settings }
+          : state.settings,
+        vehicle: action.payload.vehicle
+          ? { ...state.vehicle, ...action.payload.vehicle }
+          : state.vehicle,
+      };
+
     default:
       return state;
   }
@@ -99,25 +129,89 @@ function appReducer(state, action) {
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Persist settings
+  // Persist to localStorage (always, for offline support)
   useEffect(() => {
     localStorage.setItem("routeweigh_settings", JSON.stringify(state.settings));
   }, [state.settings]);
 
-  // Persist vehicle
   useEffect(() => {
     localStorage.setItem("routeweigh_vehicle", JSON.stringify(state.vehicle));
   }, [state.vehicle]);
 
-  // Persist hero URL
   useEffect(() => {
     localStorage.setItem("routeweigh_heroUrl", JSON.stringify(state.heroUrl));
   }, [state.heroUrl]);
 
-  // Persist weighpoints
   useEffect(() => {
     localStorage.setItem("routeweigh_weighpoints", JSON.stringify(state.weighpoints));
   }, [state.weighpoints]);
+
+  // Cloud sync: check for logged-in user on mount
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        dispatch({ type: "SET_USER_ID", payload: session.user.id });
+        // Load user data from cloud
+        loadUserDataFromCloud(session.user.id);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        dispatch({ type: "SET_USER_ID", payload: session.user.id });
+        loadUserDataFromCloud(session.user.id);
+      } else {
+        dispatch({ type: "SET_USER_ID", payload: null });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function loadUserDataFromCloud(userId) {
+    dispatch({ type: "SET_SYNCING", payload: true });
+    try {
+      const data = await loadAllUserData(userId);
+      dispatch({ type: "LOAD_USER_DATA", payload: data });
+    } catch (e) {
+      console.warn("Failed to load cloud data:", e.message);
+    } finally {
+      dispatch({ type: "SET_SYNCING", payload: false });
+    }
+  }
+
+  // Cloud sync: save weighpoints when they change (debounced)
+  useEffect(() => {
+    if (!state.userId) return;
+    const timer = setTimeout(() => {
+      replaceAllWeighPoints(state.userId, state.weighpoints).catch((e) =>
+        console.warn("Failed to sync weighpoints:", e.message)
+      );
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [state.weighpoints, state.userId]);
+
+  // Cloud sync: save settings when they change (debounced)
+  useEffect(() => {
+    if (!state.userId) return;
+    const timer = setTimeout(() => {
+      saveSettings(state.userId, state.settings).catch((e) =>
+        console.warn("Failed to sync settings:", e.message)
+      );
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [state.settings, state.userId]);
+
+  // Cloud sync: save vehicle when it changes (debounced)
+  useEffect(() => {
+    if (!state.userId) return;
+    const timer = setTimeout(() => {
+      saveVehicle(state.userId, state.vehicle).catch((e) =>
+        console.warn("Failed to sync vehicle:", e.message)
+      );
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [state.vehicle, state.userId]);
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>
