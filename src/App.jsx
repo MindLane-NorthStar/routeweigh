@@ -147,7 +147,7 @@ function App() {
 
   return (
     <AppProvider>
-      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places"]}>
         <AppContent auth={auth} />
       </APIProvider>
     </AppProvider>

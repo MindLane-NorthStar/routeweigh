@@ -17,3 +17,32 @@ body {
 *, *::before, *::after {
   box-sizing: border-box;
 }
+
+/* Google Places Autocomplete dropdown — constrain for mobile */
+.pac-container {
+  z-index: 9999 !important;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  border-radius: 8px !important;
+  border: 1px solid #D1D5DB !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  margin-top: 4px !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+.pac-item {
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+}
+
+.pac-item:hover {
+  background: #F3F4F6 !important;
+}
+
+.pac-icon {
+  display: none !important;
+}
+
+.pac-item-query {
+  font-size: 13px !important;
+}
