@@ -1,5 +1,14 @@
 // Toll rates — user-defined overrides + API-fetched values
-// User overrides take priority over API results
+// User overrides > known tolls > API results
+
+import { isTurnpikeLeg } from "./routeRules";
+
+// Known toll amounts for common routes (E-ZPass rates)
+const KNOWN_TOLLS = {
+  // Ohio Turnpike I-80 E-ZPass passenger vehicle rates
+  // These apply when isTurnpikeLeg returns true
+  turnpike_default: 1.75,
+};
 
 function loadUserTolls() {
   try {
@@ -17,9 +26,13 @@ function saveUserTolls(tolls) {
 const userTolls = loadUserTolls();
 
 export function getToll(fromId, toId) {
-  // Check user-defined toll first
+  // 1. Check user-defined toll first
   const key = `${fromId}->${toId}`;
   if (userTolls[key] !== undefined) return userTolls[key];
+
+  // 2. Check known turnpike toll
+  if (isTurnpikeLeg(fromId, toId)) return KNOWN_TOLLS.turnpike_default;
+
   return 0; // Will be replaced by API result at runtime
 }
 
@@ -41,27 +54,8 @@ export function getAllUserTolls() {
 
 // Fetch toll from Google Routes API
 export async function fetchTollFromAPI(origin, destination, departureTime) {
-  // Try serverless function first (Vercel deployed)
-  try {
-    const response = await fetch("/api/tolls", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        origin: { lat: origin.lat, lng: origin.lng },
-        destination: { lat: destination.lat, lng: destination.lng },
-        departureTime,
-      }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.tollCost > 0 || data.hasTolls) {
-        return { tollCost: data.tollCost || 0, hasTolls: data.hasTolls || false };
-      }
-    }
-  } catch (e) {
-    // Serverless not available — try direct API call
-  }
+  // Skip serverless — use client-side Routes API directly
+  // (Vercel serverless needs separate env var setup)
 
   // Fallback: call Routes API directly (works for local dev)
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -95,7 +89,6 @@ export async function fetchTollFromAPI(origin, destination, departureTime) {
     );
 
     if (!response.ok) {
-      console.warn("Routes API toll fetch:", response.status);
       return { tollCost: 0, hasTolls: false };
     }
 
@@ -114,8 +107,7 @@ export async function fetchTollFromAPI(origin, destination, departureTime) {
     }
 
     return { tollCost: Math.round(tollCost * 100) / 100, hasTolls };
-  } catch (e) {
-    console.warn("Toll fetch failed:", e.message);
+  } catch {
     return { tollCost: 0, hasTolls: false };
   }
 }
