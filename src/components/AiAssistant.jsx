@@ -59,7 +59,7 @@ export default function AiAssistant() {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="w-full mb-4 py-3 px-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl text-sm text-amber-700 hover:border-amber-300 transition-colors text-left"
+        className="w-full mb-3 py-2.5 px-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl text-sm text-amber-700 hover:border-amber-300 transition-colors text-left"
       >
         ✨ <span className="font-medium">Describe your situation</span>
         <span className="text-amber-400 ml-1">— AI will build both scenarios for you</span>

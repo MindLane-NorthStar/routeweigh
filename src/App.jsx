@@ -69,7 +69,7 @@ function AppContent({ auth }) {
     <div className="min-h-screen bg-sky-bg">
       <Hero />
       <ControlBar auth={auth} />
-      <main className="max-w-4xl mx-auto px-4 pt-4 pb-12">
+      <main className="max-w-4xl mx-auto px-4 pt-3 pb-12">
         <WeighPoints />
         <AiAssistant />
         <ScenarioPair />
