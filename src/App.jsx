@@ -15,7 +15,7 @@ import UserMenu from "./components/UserMenu";
 import { useDirections } from "./hooks/useDirections";
 import { calculateLegCost, calculateScenarioTotal } from "./utils/costEngine";
 
-function AppContent() {
+function AppContent({ auth }) {
   const { state, dispatch } = useAppContext();
   const { calculateRoute, loading, error } = useDirections();
   const [legsA, setLegsA] = useState(null);
@@ -64,12 +64,20 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-sky-bg">
       <Hero />
+      {/* Account bar — slim, above control bar */}
+      {auth && (
+        <div className="bg-white/80 border-b border-gray-100 px-4 py-1.5 flex justify-end items-center max-w-full">
+          <UserMenu
+            user={auth.user}
+            isGuest={auth.isGuest}
+            onSignOut={auth.signOut}
+            onUpgrade={auth.upgradeFromGuest}
+          />
+        </div>
+      )}
       <ControlBar />
-      <main className="max-w-4xl mx-auto px-4 pt-6 pb-12">
+      <main className="max-w-4xl mx-auto px-4 pt-4 pb-12">
         <WeighPoints />
-        <p className="text-center text-gray-400 text-[13px] my-3">
-          Two routes. Real traffic. Real fuel costs. Build your scenarios below or tell the AI what you need.
-        </p>
         <AiAssistant />
         <ScenarioPair />
 
@@ -147,16 +155,7 @@ function App() {
   return (
     <AppProvider>
       <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places"]}>
-        {/* User menu floats top-right */}
-        <div className="fixed top-3 right-3 z-[60]">
-          <UserMenu
-            user={auth.user}
-            isGuest={auth.isGuest}
-            onSignOut={auth.signOut}
-            onUpgrade={auth.upgradeFromGuest}
-          />
-        </div>
-        <AppContent />
+        <AppContent auth={auth} />
       </APIProvider>
     </AppProvider>
   );
