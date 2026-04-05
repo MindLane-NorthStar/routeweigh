@@ -29,39 +29,35 @@ export default function AuthScreen({ onSignIn, onSignUp, onGuest }) {
 
   return (
     <div className="min-h-screen bg-sky-bg">
-      {/* Hero — compact, cropped to show sky + buttes, not road */}
-      <div className="relative w-full h-[35vh] min-h-[180px] max-h-[260px] overflow-hidden">
+      {/* Hero — just sky and butte tops, title in the sky */}
+      <div className="relative w-full h-[28vh] min-h-[160px] max-h-[220px] overflow-hidden">
         <img
           src="/hero.jpg"
           alt="Highway stretching into the distance"
-          className="absolute inset-0 w-full h-full object-cover object-top"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: 'center 25%' }}
         />
-        <div className="absolute inset-0 bg-black/45" />
-        {/* Bottom fade into page background */}
-        <div className="absolute bottom-0 left-0 right-0 h-16" style={{ background: 'linear-gradient(to bottom, transparent, #D5DFEB)' }} />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute bottom-0 left-0 right-0 h-12" style={{ background: 'linear-gradient(to bottom, transparent, #D5DFEB)' }} />
 
-        <div className="relative z-10 flex flex-col items-center pt-6">
-          <h1 className="font-extrabold text-[44px] tracking-[5px] leading-none">
+        <div className="relative z-10 flex flex-col items-center pt-8 sm:pt-10">
+          <h1 className="font-extrabold text-[36px] sm:text-[44px] tracking-[5px] leading-none">
             <span className="text-accent">ROUTE</span>
             <span className="text-white">WEIGH</span>
           </h1>
-          <p className="text-[12px] tracking-[4px] text-white/85 uppercase mt-3">
+          <p className="text-[11px] tracking-[4px] text-white/85 uppercase mt-2">
             Know Before You Go
           </p>
         </div>
       </div>
 
-      {/* Explainer — on page bg, not on image */}
-      <div className="flex justify-center px-6 py-5">
-        <p className="text-[13px] text-gray-500 leading-[1.6] text-center max-w-[500px]">
-          We all have multiple places to be and multiple ways to get there.
-          RouteWeigh helps determine the smartest path. Build two multi-stop
-          driving scenarios, rearrange the order, and let RouteWeigh do what
-          it does best — weigh your routes against each other — showing you the
-          real difference in time and money between the two.
+      {/* Explainer — compact, readable */}
+      <div className="flex justify-center px-8 py-4">
+        <p className="text-[12px] sm:text-[13px] text-gray-500 leading-[1.65] text-center max-w-[420px]">
+          Build two multi-stop driving scenarios and let RouteWeigh weigh them
+          against each other — showing you the real difference in time and money.
           Describe your situation in plain English and AI builds both scenarios.
-          Every route uses Google's latest maps and live traffic data, with fuel
-          costs pulled from current gas prices in your area. No guessing — just answers.
+          Routes use live traffic data and current gas prices. No guessing — just answers.
         </p>
       </div>
 
