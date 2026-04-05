@@ -13,6 +13,7 @@ import AiAssistant from "./components/AiAssistant";
 import AuthScreen from "./components/AuthScreen";
 import { useDirections } from "./hooks/useDirections";
 import { calculateLegCost, calculateScenarioTotal } from "./utils/costEngine";
+import { saveComparison } from "./lib/sync";
 
 function AppContent({ auth }) {
   const { state, dispatch } = useAppContext();
@@ -22,12 +23,66 @@ function AppContent({ auth }) {
   const [totalA, setTotalA] = useState(null);
   const [totalB, setTotalB] = useState(null);
   const [calculated, setCalculated] = useState(false);
+  const [saved, setSaved] = useState(false);
   const weighStationRef = useRef(null);
 
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const clearAll = useCallback(() => {
+    setLegsA(null);
+    setLegsB(null);
+    setTotalA(null);
+    setTotalB(null);
+    setCalculated(false);
+    setSaved(false);
+    dispatch({ type: "UPDATE_SCENARIO", id: "A", payload: { origin: "", stops: [], departureTime: "" } });
+    dispatch({ type: "UPDATE_SCENARIO", id: "B", payload: { origin: "", stops: [], departureTime: "" } });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [dispatch]);
+
+  const handleSave = useCallback(async () => {
+    if (!totalA && !totalB) return;
+
+    // Save to localStorage always
+    const entry = {
+      id: Date.now().toString(36),
+      date: new Date().toISOString(),
+      scenarioA: state.scenarios.A,
+      scenarioB: state.scenarios.B,
+      totalA,
+      totalB,
+      winner: totalA && totalB
+        ? (totalA.totalCost < totalB.totalCost ? "A" : totalB.totalCost < totalA.totalCost ? "B" : "tie")
+        : null,
+    };
+
+    const history = JSON.parse(localStorage.getItem("routeweigh_history") || "[]");
+    history.unshift(entry);
+    if (history.length > 50) history.pop();
+    localStorage.setItem("routeweigh_history", JSON.stringify(history));
+
+    // Save to Supabase if logged in
+    if (state.userId) {
+      try {
+        await saveComparison(
+          state.userId,
+          state.scenarios.A,
+          state.scenarios.B,
+          totalA,
+          totalB,
+          entry.winner
+        );
+      } catch (e) {
+        console.warn("Cloud save failed:", e.message);
+      }
+    }
+
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  }, [totalA, totalB, state.scenarios, state.userId]);
 
   const scenarioA = state.scenarios.A;
   const scenarioB = state.scenarios.B;
@@ -74,7 +129,7 @@ function AppContent({ auth }) {
         <AiAssistant />
         <ScenarioPair />
 
-        <div className="flex justify-center my-6">
+        <div className="flex justify-center gap-3 my-6">
           <button
             onClick={runComparison}
             disabled={loading || (scenarioA.stops.length === 0 && scenarioB.stops.length === 0)}
@@ -91,6 +146,14 @@ function AppContent({ auth }) {
               "⚖️ WEIGH ROUTES"
             )}
           </button>
+          {(legsA || legsB || scenarioA.stops.length > 0 || scenarioB.stops.length > 0) && (
+            <button
+              onClick={clearAll}
+              className="text-sm text-gray-400 hover:text-gray-600 border border-gray-300 hover:border-gray-400 px-4 py-3 rounded-xl transition-colors"
+            >
+              ✕ Clear
+            </button>
+          )}
         </div>
 
         {error && (
@@ -117,6 +180,29 @@ function AppContent({ auth }) {
             settings={state.settings}
           />
         </div>
+
+        {/* Save + Clear after results */}
+        {totalA && totalB && (
+          <div className="flex justify-center gap-3 mt-4 mb-8">
+            <button
+              onClick={handleSave}
+              disabled={saved}
+              className={`text-sm font-medium px-6 py-2.5 rounded-xl transition-all ${
+                saved
+                  ? "bg-green-100 text-green-600 border border-green-200"
+                  : "bg-white text-gray-700 border border-gray-300 hover:border-accent hover:text-accent shadow-sm"
+              }`}
+            >
+              {saved ? "✓ Saved!" : "💾 Save RouteWeigh"}
+            </button>
+            <button
+              onClick={clearAll}
+              className="text-sm text-gray-400 hover:text-gray-600 border border-gray-300 hover:border-gray-400 px-4 py-2.5 rounded-xl transition-colors"
+            >
+              🔄 New Comparison
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
