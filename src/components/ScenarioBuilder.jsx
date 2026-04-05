@@ -197,7 +197,7 @@ export default function ScenarioBuilder({ id, onClone }) {
                   </select>
                 ) : (
                   // Address autocomplete input
-                  <div className="flex-1 relative">
+                  <div className="flex-1">
                     <AddressAutocomplete
                       value={stop?.address || ""}
                       onChange={(val) => setStop(i, { ...stop, address: val })}
@@ -210,7 +210,7 @@ export default function ScenarioBuilder({ id, onClone }) {
                     {stop?.lat > 0 && (
                       <button
                         onClick={() => saveStopAsWeighPoint(i)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-scenario-a hover:text-scenario-a/80 font-medium"
+                        className="mt-1 text-[11px] text-scenario-a hover:text-scenario-a/80 font-medium"
                         title="Save as WeighPoint"
                       >
                         💾 Save
