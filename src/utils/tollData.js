@@ -1,10 +1,13 @@
-// Ohio Turnpike E-ZPass rates for passenger vehicles
-// Home (Cuyahoga Falls area, Exit 180) ↔ Strongsville area (Exit 161)
-const TOLL_RATES = {
-  "home->parents": 1.75,
-  "parents->home": 1.75,
-};
+// Toll rates between WeighPoint pairs
+// Users can add custom toll rates via settings (future feature)
+// Format: "fromId->toId": costInDollars
+
+const TOLL_RATES = {};
 
 export function getToll(fromId, toId) {
   return TOLL_RATES[`${fromId}->${toId}`] || 0;
+}
+
+export function setToll(fromId, toId, cost) {
+  TOLL_RATES[`${fromId}->${toId}`] = cost;
 }
