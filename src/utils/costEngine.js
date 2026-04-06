@@ -29,13 +29,20 @@ export function calculateScenarioTotal(legs) {
   };
 }
 
+function isHome(stop) {
+  if (!stop) return false;
+  if (typeof stop === "string") return stop.toLowerCase() === "home";
+  const label = (stop.label || stop.name || "").toLowerCase();
+  return label === "home" || label.includes("home");
+}
+
 export function applyPillowPremium(scenarioA, scenarioB, settings) {
   const aEndsHome =
-    scenarioA.stops[scenarioA.stops.length - 1] === "home" ||
-    (scenarioA.stops.length === 0 && scenarioA.origin === "home");
+    isHome(scenarioA.stops[scenarioA.stops.length - 1]) ||
+    (scenarioA.stops.length === 0 && isHome(scenarioA.origin));
   const bEndsHome =
-    scenarioB.stops[scenarioB.stops.length - 1] === "home" ||
-    (scenarioB.stops.length === 0 && scenarioB.origin === "home");
+    isHome(scenarioB.stops[scenarioB.stops.length - 1]) ||
+    (scenarioB.stops.length === 0 && isHome(scenarioB.origin));
 
   return {
     aAdjusted: aEndsHome

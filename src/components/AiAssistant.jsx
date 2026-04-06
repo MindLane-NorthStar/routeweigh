@@ -20,29 +20,42 @@ export default function AiAssistant() {
     try {
       const result = await callAI(input.trim(), state.weighpoints);
 
+      // Validate WeighPoint IDs exist
+      const validIds = new Set(state.weighpoints.map((wp) => wp.id));
+      const validateId = (id) => validIds.has(id) ? id : "";
+      const validateStops = (stops) =>
+        (stops || []).filter((s) => validIds.has(s)).map((s) => {
+          const wp = state.weighpoints.find((w) => w.id === s);
+          return wp ? { id: wp.id, label: wp.label, address: wp.address, lat: wp.lat, lng: wp.lng } : s;
+        });
+
       // Populate Scenario A
       if (result.scenarioA) {
+        const origin = validateId(result.scenarioA.origin);
+        const stops = validateStops(result.scenarioA.stops);
+        if (!origin && stops.length === 0) {
+          setError("AI returned locations not in your WeighPoints. Add locations first.");
+          return;
+        }
         dispatch({
           type: "UPDATE_SCENARIO",
           id: "A",
-          payload: {
-            origin: result.scenarioA.origin || "",
-            stops: result.scenarioA.stops || [],
-            departureTime: "",
-          },
+          payload: { origin, stops, departureTime: "" },
         });
       }
 
       // Populate Scenario B
       if (result.scenarioB) {
+        const origin = validateId(result.scenarioB.origin);
+        const stops = validateStops(result.scenarioB.stops);
+        if (!origin && stops.length === 0) {
+          setError("AI returned locations not in your WeighPoints. Add locations first.");
+          return;
+        }
         dispatch({
           type: "UPDATE_SCENARIO",
           id: "B",
-          payload: {
-            origin: result.scenarioB.origin || "",
-            stops: result.scenarioB.stops || [],
-            departureTime: "",
-          },
+          payload: { origin, stops, departureTime: "" },
         });
       }
 

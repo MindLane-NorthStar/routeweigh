@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Map, useMap } from "@vis.gl/react-google-maps";
-import { DEFAULT_WEIGHPOINTS } from "../data/weighpoints";
+import { useAppContext } from "../context/AppContext";
 
 const MAP_STYLES = [
   { featureType: "poi", stylers: [{ visibility: "off" }] },
@@ -71,14 +71,16 @@ function RouteRenderer({ legs, color, dashed = false }) {
 function WeighPointMarkers() {
   const map = useMap();
   const markersRef = useRef([]);
+  const { state } = useAppContext();
 
   useEffect(() => {
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    if (!map) return;
+    if (!map || !state.weighpoints?.length) return;
 
-    DEFAULT_WEIGHPOINTS.forEach((wp) => {
+    state.weighpoints.forEach((wp) => {
+      if (!wp.lat || !wp.lng) return;
       const marker = new window.google.maps.Marker({
         map,
         position: { lat: wp.lat, lng: wp.lng },
@@ -104,13 +106,22 @@ function WeighPointMarkers() {
       markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
     };
-  }, [map]);
+  }, [map, state.weighpoints]);
 
   return null;
 }
 
 export default function RouteMap({ legsA, legsB }) {
-  const center = { lat: 41.22, lng: -81.7 }; // Center of Ohio locations
+  const { state } = useAppContext();
+
+  // Dynamic center: use WeighPoints centroid, fallback to US center
+  const points = state.weighpoints.filter((wp) => wp.lat && wp.lng);
+  const center = points.length > 0
+    ? {
+        lat: points.reduce((s, p) => s + p.lat, 0) / points.length,
+        lng: points.reduce((s, p) => s + p.lng, 0) / points.length,
+      }
+    : { lat: 39.8, lng: -98.6 };
 
   return (
     <div className="bg-white rounded-2xl shadow-card overflow-hidden border border-gray-200 my-6">

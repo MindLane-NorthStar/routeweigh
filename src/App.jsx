@@ -15,6 +15,7 @@ import AuthScreen from "./components/AuthScreen";
 import { useDirections } from "./hooks/useDirections";
 import { calculateLegCost, calculateScenarioTotal } from "./utils/costEngine";
 import { saveComparison } from "./lib/sync";
+import { ToastProvider } from "./components/Toast";
 
 function AppContent({ auth }) {
   const { state, dispatch } = useAppContext();
@@ -243,11 +244,13 @@ function App() {
   }
 
   return (
-    <AppProvider>
-      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places"]}>
-        <AppContent auth={auth} />
-      </APIProvider>
-    </AppProvider>
+    <ToastProvider>
+      <AppProvider>
+        <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places"]}>
+          <AppContent auth={auth} />
+        </APIProvider>
+      </AppProvider>
+    </ToastProvider>
   );
 }
 

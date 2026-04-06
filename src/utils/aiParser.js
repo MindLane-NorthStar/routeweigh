@@ -73,38 +73,5 @@ export async function callAI(message, weighpoints) {
     }
   }
 
-  // Fallback: direct client-side call (for development only)
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error("AI assistant not configured. Set up the Vercel serverless function or add VITE_ANTHROPIC_API_KEY.");
-  }
-
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: buildSystemPrompt(weighpoints),
-      messages: [{ role: "user", content: message }],
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`AI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const text = data.content?.[0]?.text || "";
-  try {
-    return JSON.parse(text);
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (match) return JSON.parse(match[0]);
-    throw new Error("Could not parse AI response");
-  }
+  throw new Error("AI assistant unavailable. Please try again later.");
 }

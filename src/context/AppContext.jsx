@@ -6,6 +6,7 @@ import {
   saveSettings,
   saveVehicle,
 } from "../lib/sync";
+import { useToast } from "../components/Toast";
 
 const AppContext = createContext();
 
@@ -130,6 +131,7 @@ function appReducer(state, action) {
 
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const toast = useToast();
 
   // Persist to localStorage (always, for offline support)
   useEffect(() => {
@@ -177,6 +179,7 @@ export function AppProvider({ children }) {
       dispatch({ type: "LOAD_USER_DATA", payload: data });
     } catch (e) {
       console.warn("Failed to load cloud data:", e.message);
+      toast?.("Could not load your saved data. Using local copy.", "warning");
     } finally {
       dispatch({ type: "SET_SYNCING", payload: false });
     }
@@ -186,9 +189,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (!state.userId) return;
     const timer = setTimeout(() => {
-      replaceAllWeighPoints(state.userId, state.weighpoints).catch((e) =>
-        console.warn("Failed to sync weighpoints:", e.message)
-      );
+      replaceAllWeighPoints(state.userId, state.weighpoints).catch((e) => {
+        console.warn("Failed to sync weighpoints:", e.message);
+        toast?.("Failed to save locations to cloud.", "error");
+      });
     }, 1000);
     return () => clearTimeout(timer);
   }, [state.weighpoints, state.userId]);
@@ -197,9 +201,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (!state.userId) return;
     const timer = setTimeout(() => {
-      saveSettings(state.userId, state.settings).catch((e) =>
-        console.warn("Failed to sync settings:", e.message)
-      );
+      saveSettings(state.userId, state.settings).catch((e) => {
+        console.warn("Failed to sync settings:", e.message);
+        toast?.("Failed to save settings to cloud.", "error");
+      });
     }, 1000);
     return () => clearTimeout(timer);
   }, [state.settings, state.userId]);
@@ -208,9 +213,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (!state.userId) return;
     const timer = setTimeout(() => {
-      saveVehicle(state.userId, state.vehicle).catch((e) =>
-        console.warn("Failed to sync vehicle:", e.message)
-      );
+      saveVehicle(state.userId, state.vehicle).catch((e) => {
+        console.warn("Failed to sync vehicle:", e.message);
+        toast?.("Failed to save vehicle to cloud.", "error");
+      });
     }, 1000);
     return () => clearTimeout(timer);
   }, [state.vehicle, state.userId]);
